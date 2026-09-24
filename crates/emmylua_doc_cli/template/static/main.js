@@ -271,6 +271,14 @@
       );
     }
 
+    function typeScore(type) {
+      if (type === 'class' || type === 'module' || type === 'global') return 0;
+      if (type === 'function') return 1;
+      if (type === 'enum' || type === 'alias') return 2;
+      if (type === 'field') return 3;
+      return 4;
+    }
+
     function updateSearch() {
       var query = input.value.trim().toLowerCase();
       if (!query) {
@@ -286,10 +294,19 @@
             return entry.name.toLowerCase().indexOf(query) !== -1;
           })
           .sort(function (a, b) {
+            var kDiff = typeScore(a.kind) - typeScore(b.kind);
+            if (kDiff !== 0) {
+              return kDiff;
+            }
+
             var d = rank(a, query) - rank(b, query);
-            return d !== 0 ? d : a.name.localeCompare(b.name);
+            if (d !== 0) {
+              return d;
+            }
+
+            return a.name.localeCompare(b.name);
           })
-          .slice(0, 20)
+          .slice(0, 50)
           .map(function (entry) {
             return {
               href: entry.href,

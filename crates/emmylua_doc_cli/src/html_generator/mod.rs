@@ -549,7 +549,7 @@ fn write_search_index(
             entries.push(serde_json::json!({
                 "name": method.name,
                 "href": format!("{}#{}", base_href, method.short_name),
-                "kind": "function", // You can keep "function" or change to "method" for the UI badge
+                "kind": "function",
             }));
         }
     }
