@@ -123,7 +123,7 @@ pub fn generate_html(
     fill_kind_letters(&mut nav);
 
     // Render item pages (in subdirectories -> "../" prefix).
-    for (filename, mut doc) in pages {
+    for (filename, doc) in &mut pages {
         doc.kind_letter = doc
             .kind
             .chars()
@@ -151,7 +151,7 @@ pub fn generate_html(
     let index_html = render_page(&tl, "index.html", &index_doc)?;
     std::fs::write(output.join("index.html"), index_html)?;
 
-    write_search_index(&output, &index_doc.nav)?;
+    write_search_index(&output, &index_doc.nav, &pages)?;
 
     eprintln!("Documentation html exported to {:?}", output);
     Ok(())
@@ -498,8 +498,13 @@ fn render_page(
     tl.render(template, &context).map_err(Into::into)
 }
 
-fn write_search_index(output: &Path, nav: &NavModel) -> Result<(), Box<dyn std::error::Error>> {
+fn write_search_index(
+    output: &Path,
+    nav: &NavModel,
+    docs: &[(String, HtmlDoc)]
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries = Vec::new();
+
     for item in &nav.types {
         entries.push(serde_json::json!({
             "name": item.name,
@@ -521,6 +526,34 @@ fn write_search_index(output: &Path, nav: &NavModel) -> Result<(), Box<dyn std::
             "kind": "global",
         }));
     }
+
+    for (_, doc) in docs {
+        let base_href = nav.types.iter()
+            .chain(nav.modules.iter())
+            .chain(nav.globals.iter())
+            .find(|n| n.short_name == doc.name)
+            .map(|n| n.href.as_str())
+            .unwrap_or("");
+
+        if base_href.is_empty() { continue; }
+
+        for member in &doc.fields {
+            entries.push(serde_json::json!({
+                "name": member.name,
+                "href": format!("{}#{}", base_href, member.short_name),
+                "kind": "field",
+            }));
+        }
+
+        for method in &doc.methods {
+            entries.push(serde_json::json!({
+                "name": method.name,
+                "href": format!("{}#{}", base_href, method.short_name),
+                "kind": "function", // You can keep "function" or change to "method" for the UI badge
+            }));
+        }
+    }
+
     let json = serde_json::to_string(&entries)?;
     std::fs::write(
         output.join("static").join("search-index.js"),

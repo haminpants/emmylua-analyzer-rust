@@ -251,6 +251,9 @@
       if (name.indexOf(query) === 0) {
         return 1;
       }
+      if (name.indexOf('.' + query) !== -1 || name.indexOf(':' + query) !== -1) {
+        return 1;
+      }
       return 2;
     }
 
@@ -375,6 +378,15 @@
         event.preventDefault();
         input.focus();
         input.select();
+      } else if (event.key == "Enter") {
+        var entry = selected >= 0 ? matches[selected] : matches[0];
+        if (entry) {
+          window.location.href = rootPrefix() + entry.href;
+
+          resultsPanel.hidden = true;
+          input.setAttribute('aria-expanded', 'false');
+          input.blur();
+        }
       }
     });
   }
