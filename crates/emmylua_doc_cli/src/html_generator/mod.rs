@@ -540,7 +540,7 @@ fn write_search_index(
         for member in &doc.fields {
             entries.push(serde_json::json!({
                 "name": member.name,
-                "href": format!("{}#{}", base_href, member.short_name),
+                "href": format!("{}#{}", base_href, member.name),
                 "kind": "field",
             }));
         }
@@ -548,7 +548,7 @@ fn write_search_index(
         for method in &doc.methods {
             entries.push(serde_json::json!({
                 "name": method.name,
-                "href": format!("{}#{}", base_href, method.short_name),
+                "href": format!("{}#{}", base_href, method.name),
                 "kind": "function",
             }));
         }
