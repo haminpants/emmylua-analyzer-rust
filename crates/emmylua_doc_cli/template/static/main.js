@@ -271,11 +271,11 @@
       );
     }
 
-    function typeScore(type) {
-      if (type === 'class' || type === 'module' || type === 'global') return 0;
-      if (type === 'function') return 1;
-      if (type === 'enum' || type === 'alias') return 2;
-      if (type === 'field') return 3;
+    function kindScore(kind) {
+      if (kind === 'class' || kind === 'module' || kind === 'global') return 0;
+      if (kind === 'function') return 1;
+      if (kind === 'enum' || kind === 'alias') return 2;
+      if (kind === 'field') return 3;
       return 4;
     }
 
@@ -294,7 +294,7 @@
             return entry.name.toLowerCase().indexOf(query) !== -1;
           })
           .sort(function (a, b) {
-            var kDiff = typeScore(a.kind) - typeScore(b.kind);
+            var kDiff = kindScore(a.kind) - kindScore(b.kind);
             if (kDiff !== 0) {
               return kDiff;
             }
