@@ -253,17 +253,27 @@ pub fn collect_members(
             LuaMemberKey::Integer(i) => format!("[{}]", i),
             _ => continue,
         };
-        let title_name = format!("{}.{}", owner_name, name);
+
+        let mut is_colon = false;
+        if let LuaType::Signature(sig_id) = member_type {
+            if let Some(sig) = db.get_signature_index().get(&sig_id) {
+                is_colon = sig.is_colon_define;
+            }
+        }
+
+        let separator = if is_colon { ":" } else { "." };
+        let title_name = format!("{}{}{}", owner_name, separator, name);
 
         if member_type.is_function() {
             let display = signature_pre(render_function_signature_html(
                 db,
                 member_type,
-                &format!("{}.{}", owner_name, name),
+                &title_name,
                 false,
                 ctx.linker,
             ));
-            let mut member = HtmlMember::from_property(title_name, display, member_property);
+
+            let mut member = HtmlMember::from_property(title_name.clone(), display, member_property);
             if let Some((params, returns)) =
                 super::html_type::function_details_html(db, member_type, ctx.linker)
             {
@@ -273,7 +283,7 @@ pub fn collect_members(
             member.overloads = html_type::signature_overloads_html(
                 db,
                 member_type,
-                &format!("{}.{}", owner_name, name),
+                &title_name,
                 ctx.linker,
             )
             .into_iter()
